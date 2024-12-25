@@ -10,18 +10,18 @@ import { UserModule } from './res/user/user.module';
   imports: [
     TypeOrmModule.forRootAsync({
       useFactory: () => ({
-        retryAttempts: 10, // 연결에 실패했을 경우, 연결 재시도 횟수를 의미합니다.
-        type: 'mysql', // 어떤 DB를 사용할 것인지
-        host: 'localhost', // 우리는 본인 컴퓨터에 설치된 DB를 사용할 것이디 localhost로 설정
-        port: 3306,  // MySQL의 기본 포트는 3306 입니다.
-        database: 'nest-practice',  // 위에서 만든 study 데이터베이스로 설정
-        username: 'ghma',  // 설정한 username입력, 기본은 root
-        password: 'Aa000000?', // 설정한 password입력
+        retryAttempts: 10,
+        type: 'mysql',
+        host: 'localhost',
+        port: 3306,
+        database: 'nest-practice',
+        username: 'ghma',
+        password: 'Aa000000?',
         entities: [
           path.join(__dirname, '/entities/**/*.entity.{js, ts}'),
         ],
-        synchronize: false, // 무조건 false로 해두세요.
-        logging: true,  // typeorm 쿼리 실행시, MySQL의 쿼리문을 터미널에 보여줍니다.
+        synchronize: false,
+        logging: true,
         timezone: 'local',
       }),
     }),

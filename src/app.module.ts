@@ -6,6 +6,7 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { UserModule } from './res/user/user.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import {ArticleModule} from "./res/article/article.module";
 
 console.log(`.env.${process.env.NODE_ENV}`);
 
@@ -32,6 +33,7 @@ console.log(`.env.${process.env.NODE_ENV}`);
       }),
     }),
     UserModule,
+    ArticleModule,
   ],
   controllers: [AppController],
   providers: [AppService],

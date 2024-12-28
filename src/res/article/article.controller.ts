@@ -1,24 +1,39 @@
 import {Body, Controller, Delete, Get, Param, Post, Put, UseGuards} from '@nestjs/common';
 import { ArticleService } from './article.service';
 import {CreateArticleDto} from "../../dtos/article/create-article.dto";
+import { ApiBody, ApiOperation, ApiTags } from '@nestjs/swagger';
 
+@ApiTags('게시글 API')     // ApiTag를 통해 Article Controller가 무슨 역할을 하는지 태그를 달아줍니다.
 @Controller('article')
 export class ArticleController {
-
-
     constructor(private readonly articleService: ArticleService) {}
 
+    @ApiOperation({
+        summary: '게시글 작성 API',
+        description: '유저가 게시글을 작성한다.',
+    })
+    @ApiBody({
+        type: CreateArticleDto,
+    })
+    // ApiBearerAuth()
+    // @UseGuards(JwtAuthGuard)
     @Post()
-    async createArticle(@Body() body: CreateArticleDto){
-        const title = body.title
-        const content = body.content
-        const userId = "1" // Guard로 받아 올 수 있다.
+    async createArticle(@Body() body: CreateArticleDto,
+                        // @User() user
+    ) {
+        // const userId = user.id;
+        const userId = "1"
+
+        const title = body.title;
+        const content = body.content;
 
         const article = await this.articleService.createArticle(
             title,
             content,
-            userId
-        )
+            userId,
+        );
+
+        return article;
     }
 
     @Get('/:id')

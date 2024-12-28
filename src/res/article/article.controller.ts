@@ -1,5 +1,6 @@
 import {Body, Controller, Delete, Get, Param, Post, Put, UseGuards} from '@nestjs/common';
 import { ArticleService } from './article.service';
+import {CreateArticleDto} from "../../dtos/article/create-article.dto";
 
 @Controller('article')
 export class ArticleController {
@@ -8,7 +9,7 @@ export class ArticleController {
     constructor(private readonly articleService: ArticleService) {}
 
     @Post()
-    async createArticle(@Body() body){
+    async createArticle(@Body() body: CreateArticleDto){
         const title = body.title
         const content = body.content
         const userId = "1" // Guard로 받아 올 수 있다.

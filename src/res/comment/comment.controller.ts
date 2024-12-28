@@ -54,7 +54,7 @@ export class CommentController {
     ) {
         const commentId = id;
         // const userId = user.id;
-        const userId = 1;
+        const userId = "1";
 
         const res = await this.commentService.removeComment(commentId, userId);
 

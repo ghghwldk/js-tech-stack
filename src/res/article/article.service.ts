@@ -20,10 +20,14 @@ export class ArticleService {
         return article
     }
 
-    async getArticle(articleId: string){
+    async getArticle(articleId: string) {
         const article = await this.articleRepository.findOne({
             where: {
-                id: articleId
+                id: articleId,
+            },
+            relations: {
+                // left join
+                comments: true,
             },
         });
 

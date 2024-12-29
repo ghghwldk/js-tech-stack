@@ -2,13 +2,7 @@ import { Controller, Get, Post, Body, Query } from '@nestjs/common';
 import { Snowflake } from 'nodejs-snowflake';
 import { QuizService } from './quiz.service';
 import { ParseIntPipe } from '@nestjs/common';
-
-class Quiz {
-    id: string;
-    idx: number;
-    question: string;
-    answer: string;
-}
+import {QuizEntity} from "../entities/quiz.entity";
 
 // Initialize the Snowflake generator
 const snowflake = new Snowflake({
@@ -24,16 +18,16 @@ export class QuizController {
     getQuizzes(
         @Query('page', ParseIntPipe) page: number = 1, // Default to page 1 if no page is provided
         @Query('limit', ParseIntPipe) limit: number = 5, // Default to 5 quizzes per page if no limit is provided
-    ): Quiz[] {
+    ): QuizEntity[] {
         return this.quizService.getQuizzes(page, limit);
     }
 
     @Post()
-    addQuiz(@Body() quiz: Omit<Quiz, 'id' | 'idx'>): void {
+    addQuiz(@Body() quiz: Omit<QuizEntity, 'id' | 'idx'>): void {
         const id: BigInt = snowflake.getUniqueID(); // Generate a unique ID
         const idx: number = this.quizService.getNextIdx();
 
-        const newQuiz: Quiz = {
+        const newQuiz: QuizEntity = {
             id: id.toString(),
             idx: idx,
             ...quiz,

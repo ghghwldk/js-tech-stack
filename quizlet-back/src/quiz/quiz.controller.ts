@@ -10,16 +10,21 @@ const snowflake = new Snowflake({
     custom_epoch: 1672531200000, // Example epoch (Jan 1, 2023)
 });
 
-@Controller('/api/quizzes')
+@Controller('/api/quiz')
 export class QuizController {
     constructor(private readonly quizService: QuizService) {}
 
-    @Get()
+    @Get('/list')
     getQuizzes(
         @Query('page', ParseIntPipe) page: number = 1, // Default to page 1 if no page is provided
         @Query('limit', ParseIntPipe) limit: number = 5, // Default to 5 quizzes per page if no limit is provided
     ): QuizEntity[] {
         return this.quizService.getQuizzes(page, limit);
+    }
+
+    @Get()
+    getQuiz(): QuizEntity {
+        return this.quizService.getRandomQuiz();
     }
 
     @Post()

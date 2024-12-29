@@ -22,6 +22,7 @@ export class QuizService {
         this.initializeDefaultQuizzes();
     }
 
+
     private initializeDefaultQuizzes(): void {
         const defaultQuizzes = Array.from({ length: 21 }, (_, idx) => {
             const quiz = new QuizEntity(
@@ -34,6 +35,14 @@ export class QuizService {
             return quiz;
         });
         this.quizzes = defaultQuizzes;
+    }
+
+    getRandomQuiz(): QuizEntity{
+        if (this.quizzes.length > 0) {
+            const randomIndex = Math.floor(Math.random() * this.quizzes.length);
+            return this.quizzes[randomIndex];
+        }
+        return null;
     }
 
     // Get quizzes with pagination

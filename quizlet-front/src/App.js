@@ -24,8 +24,18 @@ const App = () => {
 
     const fetchQuizzes = async () => {
         try {
-            const response = await axios.get(`/api/quizzes?page=${currentPage}&limit=${quizzesPerPage}`);
+            const response = await axios.get(`/api/quiz/list?page=${currentPage}&limit=${quizzesPerPage}`);
             setQuizzes(response.data);
+        } catch (err) {
+            console.error('Error fetching quizzes:', err);
+            setError('Failed to load quizzes.');
+        }
+    };
+
+    const fetchRandomQuiz = async () => {
+        try {
+            const response = await axios.get(`/api/quiz`);
+            setRandomQuiz(response.data);
         } catch (err) {
             console.error('Error fetching quizzes:', err);
             setError('Failed to load quizzes.');
@@ -53,7 +63,7 @@ const App = () => {
         }
 
         try {
-            await axios.post('/api/quizzes', newQuiz);
+            await axios.post('/api/quiz', newQuiz);
             fetchQuizzes(); // Re-fetch quizzes after adding a new one
             setNewQuiz({ id: '', question: '', type: 'short', answer: '' });
         } catch (err) {
@@ -71,12 +81,16 @@ const App = () => {
         }
     };
 
-    const getRandomQuiz = () => {
-        if (quizzes.length > 0) {
-            const randomIndex = Math.floor(Math.random() * quizzes.length);
-            return quizzes[randomIndex];
+    const getRandomQuiz = async () => {
+        try {
+            fetchRandomQuiz(); // Re-fetch random quiz
+        } catch (err) {
+            if (err.response && err.response.status === 400) {
+                setError(err.response.data.message);
+            } else {
+                console.error('Error adding quiz:', err);
+            }
         }
-        return null; // Return null if no quizzes are available
     };
 
     const handleRandomQuizChange = () => {

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { BrowserRouter as Router, Route, Routes, Link } from 'react-router-dom';
+import { BrowserRouter as Router, Route, Routes, NavLink } from 'react-router-dom';
 import './App.css';
 
 const App = () => {
@@ -9,16 +9,22 @@ const App = () => {
     const [error, setError] = useState('');
     const [currentPage, setCurrentPage] = useState(1); // Current page state
     const [quizzesPerPage] = useState(5); // Number of quizzes per page
+    const [randomQuiz, setRandomQuiz] = useState(null); // State for currently displayed random quiz
 
     useEffect(() => {
         fetchQuizzes();
     }, [currentPage]); // Re-fetch quizzes when the page changes
 
+    useEffect(() => {
+        // Pick a random quiz whenever quizzes are updated
+        if (quizzes.length > 0) {
+            setRandomQuiz(getRandomQuiz());
+        }
+    }, [quizzes]); // Re-run when quizzes change
+
     const fetchQuizzes = async () => {
-        console.log(`Fetching quizzes for page ${currentPage}`); // Debugging log
         try {
             const response = await axios.get(`/api/quizzes?page=${currentPage}&limit=${quizzesPerPage}`);
-            console.log('Quizzes fetched:', response.data); // Debugging log
             setQuizzes(response.data);
         } catch (err) {
             console.error('Error fetching quizzes:', err);
@@ -36,7 +42,6 @@ const App = () => {
         e.preventDefault();
         setError(''); // Reset error message
 
-        // Validation: Ensure the question and answer fields are not empty
         if (!newQuiz.question.trim()) {
             setError('Please write a question.');
             return;
@@ -60,12 +65,23 @@ const App = () => {
         }
     };
 
-    // Handler for changing pages
     const handlePageChange = (newPage) => {
         if (newPage > 0) {
-            console.log(`Changing to page ${newPage}`); // Debugging log
             setCurrentPage(newPage);
         }
+    };
+
+    const getRandomQuiz = () => {
+        if (quizzes.length > 0) {
+            const randomIndex = Math.floor(Math.random() * quizzes.length);
+            return quizzes[randomIndex];
+        }
+        return null; // Return null if no quizzes are available
+    };
+
+    const handleRandomQuizChange = () => {
+        const newRandomQuiz = getRandomQuiz();
+        setRandomQuiz(newRandomQuiz); // Update the random quiz
     };
 
     return (
@@ -74,8 +90,30 @@ const App = () => {
                 <header className="header">
                     <nav>
                         <ul>
-                            <li><Link to="/">Home</Link></li>
-                            <li><Link to="/add-quiz">Add Quiz</Link></li>
+                            <li>
+                                <NavLink
+                                    to="/"
+                                    className={({isActive}) => isActive ? "active-tab" : ""}
+                                >
+                                    Home
+                                </NavLink>
+                            </li>
+                            <li>
+                                <NavLink
+                                    to="/add-quiz"
+                                    className={({isActive}) => isActive ? "active-tab" : ""}
+                                >
+                                    Add Quiz
+                                </NavLink>
+                            </li>
+                            <li>
+                                <NavLink
+                                    to="/random-quiz"
+                                    className={({isActive}) => isActive ? "active-tab" : ""}
+                                >
+                                    Random Quiz
+                                </NavLink>
+                            </li>
                         </ul>
                     </nav>
                 </header>
@@ -135,6 +173,25 @@ const App = () => {
                                 />
                                 <button type="submit" className="submit-button">Add Quiz</button>
                             </form>
+                        }
+                    />
+                    <Route
+                        path="/random-quiz"
+                        element={
+                            <>
+                                {randomQuiz ? (
+                                    <div className="random-quiz">
+                                        <h2>Random Quiz</h2>
+                                        <h3 className="quiz-question">{randomQuiz.question}</h3>
+                                        <p className="correct-answer">A: {randomQuiz.answer}</p>
+                                        <button onClick={handleRandomQuizChange} className="refresh-button">
+                                            Show Another Quiz
+                                        </button>
+                                    </div>
+                                ) : (
+                                    <p>No quizzes available.</p>
+                                )}
+                            </>
                         }
                     />
                 </Routes>

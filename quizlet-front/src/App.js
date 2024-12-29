@@ -64,7 +64,7 @@ const App = () => {
 
         try {
             await axios.post('/api/quiz', newQuiz);
-            fetchQuizzes(); // Re-fetch quizzes after adding a new one
+            await fetchQuizzes(); // Re-fetch quizzes after adding a new one
             setNewQuiz({ id: '', question: '', type: 'short', answer: '' });
         } catch (err) {
             if (err.response && err.response.status === 400) {
@@ -83,7 +83,7 @@ const App = () => {
 
     const getRandomQuiz = async () => {
         try {
-            fetchRandomQuiz(); // Re-fetch random quiz
+            await fetchRandomQuiz(); // Re-fetch random quiz
         } catch (err) {
             if (err.response && err.response.status === 400) {
                 setError(err.response.data.message);

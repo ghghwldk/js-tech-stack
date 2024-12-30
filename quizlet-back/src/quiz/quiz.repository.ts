@@ -16,12 +16,15 @@ export class QuizRepository {
                 (idx + 1).toString(),
                 idx + 1,
                 `Question ${idx + 1}`,
-                `Answer ${idx + 1}`,
-                new Date().toLocaleDateString()
+                `Answer ${idx + 1}`
             );
             return quiz;
         });
         this.quizzes = defaultQuizzes;
+    }
+
+    getQuizzes(maxDate): QuizEntity[] {
+        return this.quizzes.filter(e => e.requiredStudyTime <= maxDate);
     }
 
     getQuizzesLength(): number{
@@ -53,13 +56,15 @@ export class QuizRepository {
         return Math.max(...this.quizzes.map(quiz => quiz.idx)); // Get the max idx from quizzes
     }
 
-    // Function to query questions by difficulty range
-    queryQuestionsByDifficulty(questions: QuizEntity[], minDifficulty: number, maxDifficulty: number): QuizEntity[] {
-        return questions.filter(q => q.difficulty >= minDifficulty && q.difficulty <= maxDifficulty);
+    private sortByLastStudyTime(entities: QuizEntity[]): QuizEntity[] {
+        return entities.sort((a, b) =>
+            new Date(b.lastStudyTime).getTime() - new Date(a.lastStudyTime).getTime()
+        );
     }
 
-    // Function to sort incorrect answers by the most recent date
-    sortIncorrectAnswersByDate(incorrectAnswers: QuizEntity[]): QuizEntity[] {
-        return incorrectAnswers.sort((a, b) => new Date(b.addedDate).getTime() - new Date(a.addedDate).getTime());
+    getTopByAccuracy(top){
+        return this.quizzes
+            .sort((a, b) =>b.getAccuracy() - a.getAccuracy())
+            .slice(top);
     }
 }

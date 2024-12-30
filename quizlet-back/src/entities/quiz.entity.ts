@@ -1,39 +1,46 @@
+import {addMinutesToCurrentTime} from "../helper/helper.time";
+
 export class QuizEntity {
     id: string;
     idx: number;
     question: string;
     answer: string;
-    difficulty: number;
-    addedDate: string;
-    correct: boolean;
+    addedDate: Date;
+    correctTime: number;
+    totalAppearanceCount: number;
+    lastStudyTime: Date;
+    requiredStudyTime: Date;
 
-    constructor(id: string, idx: number, question: string, answer: string, addedDate: string = '') {
-        const defaultDifficulty = 3
-
+    constructor(id: string, idx: number, question: string, answer: string) {
+        this.id = id;
+        this.idx = idx;
         this.question = question;
         this.answer = answer;
-        this.difficulty = defaultDifficulty;
-        this.addedDate = addedDate; // Date when the question was added
-        this.correct = null; // Track if the question was answered correctly
+        this.addedDate = new Date();
+        this.lastStudyTime = new Date();
+        this.requiredStudyTime = addMinutesToCurrentTime(10)
     }
 
-    markCorrect(): void {
-        this.correct = true;
-        this.difficulty -= 1; // Decrease difficulty for correct answers
+    getAccuracy(): number{
+        return this.correctTime / this.totalAppearanceCount
     }
 
-    markIncorrect(): void {
-        this.correct = false;
-        this.difficulty += 1; // Increase difficulty for incorrect answers
+    updateLastStudyTime(): void{
+        this.lastStudyTime = new Date()
     }
 
-    flip(): void {
-        // Flip the question (reverse order or orientation)
-        // Implement logic for flipping here if needed
+    reflectCorrect(): number {
+        this.correctTime += 1
+        this.totalAppearanceCount += 1
+        this.updateLastStudyTime()
+
+        return this.getAccuracy()
     }
 
-    resetForNew(): void {
-        this.difficulty = -3; // New questions start with a penalty
-        this.correct = null; // Reset correctness status
+    reflectIncorrect(): number {
+        this.totalAppearanceCount += 1
+        this.updateLastStudyTime()
+
+        return this.getAccuracy()
     }
 }

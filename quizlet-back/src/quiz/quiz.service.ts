@@ -4,17 +4,40 @@ import {QuizRepository} from "./quiz.repository";
 
 @Injectable()
 export class QuizService {
+    private quizRecords: Map<string, QuizEntity> = new Map();
+    private randomWindowLength = 10
+    // 복습 추천 시간 간격 (분 단위)
+    private REVIEW_INTERVALS: number[] = [10, 60, 540, 1440, 10080, 43200]; // 10분, 1시간, 9시간, 1일, 1주, 1개월
+
     constructor(private readonly quizRepository: QuizRepository) {}
 
-    getRandomQuiz(): QuizEntity{
+    getRecommended(): QuizEntity{
         const quizzesLength = this.quizRepository.getQuizzesLength()
-        const randomIndex = Math.floor(Math.random() * quizzesLength);
+        const randomWindowLength = quizzesLength > this.randomWindowLength
+            ? this.randomWindowLength
+            : quizzesLength;
 
-        if(quizzesLength){
-            return this.quizRepository.getQuiz(randomIndex)
+        const randomIndex = Math.floor(Math.random() * randomWindowLength);
+
+        if(randomWindowLength){
+            return this.quizRepository.getTopByAccuracy(randomWindowLength)[randomIndex]
         }
 
         return null
+    }
+
+    reflectResult(id: string, isCorrect: boolean): void {
+        const record: QuizEntity = this.quizRecords.get(id);
+        if (!record) {
+            console.error(`Quiz ID ${id} not found.`);
+            return;
+        }
+
+        if(isCorrect){
+            record.reflectCorrect()
+        }else{
+            record.reflectIncorrect()
+        }
     }
 
     getQuizzes(page: number, limit: number): QuizEntity[] {

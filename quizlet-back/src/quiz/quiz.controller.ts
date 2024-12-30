@@ -24,7 +24,7 @@ export class QuizController {
 
     @Get()
     getQuiz(): QuizEntity {
-        return this.quizService.getRandomQuiz();
+        return this.quizService.getRecommended();
     }
 
     @Post()

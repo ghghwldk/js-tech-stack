@@ -16,6 +16,7 @@ const App = () => {
         fetchQuizzes();
     }, [currentPage]); // Re-fetch quizzes when the page changes
 
+
     useEffect(() => {
         // Pick a random quiz whenever quizzes are updated
         if (quizzes.length > 0) {
@@ -97,6 +98,31 @@ const App = () => {
         setRandomQuiz(newRandomQuiz); // Update the state with the fetched random quiz
     };
 
+    const handleCorrect = (e)=>{
+
+
+        const checkCorrectButton = (e) => {
+            if(e.currentTarget.classList.contains('correct-button')){
+                return true;
+            }else{
+                return false;
+            }
+        }
+
+        const isCorrectButton = checkCorrectButton(e)
+        try {
+            axios.post('/api/quiz/reflect-result', {
+                id: randomQuiz.id,
+                isCorrect: isCorrectButton,
+            });
+        } catch (err) {
+            if (err.response && err.response.status === 400) {
+                setError(err.response.data.message);
+            } else {
+                console.error('Error adding quiz:', err);
+            }
+        }
+    }
 
     return (
         <Router>
@@ -216,6 +242,12 @@ const App = () => {
                                         </button>
                                         <button onClick={handleRandomQuizChange} className="refresh-button">
                                             Show Another Quiz
+                                        </button>
+                                        <button onClick={handleCorrect} className="correct-button">
+                                            mark as correct
+                                        </button>
+                                        <button onClick={handleCorrect} className="incorrect-button">
+                                            mark as  incorrect
                                         </button>
                                     </div>
                                 ) : (

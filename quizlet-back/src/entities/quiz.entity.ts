@@ -29,18 +29,18 @@ export class QuizEntity {
         this.lastStudyTime = new Date()
     }
 
-    reflectCorrect(): number {
+    reflectCorrect(): QuizEntity {
         this.correctTime += 1
         this.totalAppearanceCount += 1
         this.updateLastStudyTime()
 
-        return this.getAccuracy()
+        return this
     }
 
-    reflectIncorrect(): number {
+    reflectIncorrect(): QuizEntity {
         this.totalAppearanceCount += 1
         this.updateLastStudyTime()
 
-        return this.getAccuracy()
+        return this
     }
 }

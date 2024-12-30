@@ -26,18 +26,21 @@ export class QuizService {
         return null
     }
 
-    reflectResult(id: string, isCorrect: boolean): void {
-        const record: QuizEntity = this.quizRecords.get(id);
-        if (!record) {
+    reflectResult(id: string, isCorrect: boolean): QuizEntity {
+        const found: QuizEntity = this.quizRecords.get(id);
+        if (!found) {
             console.error(`Quiz ID ${id} not found.`);
             return;
         }
 
+        let result: QuizEntity = undefined
         if(isCorrect){
-            record.reflectCorrect()
+            result = found.reflectCorrect()
         }else{
-            record.reflectIncorrect()
+            result = found.reflectIncorrect()
         }
+
+        return result
     }
 
     getQuizzes(page: number, limit: number): QuizEntity[] {

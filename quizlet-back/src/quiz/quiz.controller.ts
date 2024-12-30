@@ -3,6 +3,7 @@ import { Snowflake } from 'nodejs-snowflake';
 import { QuizService } from './quiz.service';
 import { ParseIntPipe } from '@nestjs/common';
 import {QuizEntity} from "../entities/quiz.entity";
+import {QuizReflectDto} from "../dtos/quiz/quiz-reflect.dto";
 
 // Initialize the Snowflake generator
 const snowflake = new Snowflake({
@@ -26,6 +27,13 @@ export class QuizController {
     getQuiz(): QuizEntity {
         return this.quizService.getRecommended();
     }
+
+    @Post('/reflect-result')
+    reflect(@Body() quizReflectDto: QuizReflectDto): QuizEntity{
+        return this.quizService
+            .reflectResult(quizReflectDto.id, quizReflectDto.isCorrect);
+    }
+
 
     @Post()
     addQuiz(@Body() quiz: Omit<QuizEntity, 'id' | 'idx'>): void {

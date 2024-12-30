@@ -10,6 +10,7 @@ const App = () => {
     const [currentPage, setCurrentPage] = useState(1); // Current page state
     const [quizzesPerPage] = useState(5); // Number of quizzes per page
     const [randomQuiz, setRandomQuiz] = useState(null); // State for currently displayed random quiz
+    const [showAnswers, setShowAnswers] = useState({}); // Track answer visibility for each quiz
 
     useEffect(() => {
         fetchQuizzes();
@@ -20,32 +21,31 @@ const App = () => {
         if (quizzes.length > 0) {
             setRandomQuiz(getRandomQuiz());
         }
+
+        handleRandomQuizChange();
     }, [quizzes]); // Re-run when quizzes change
 
     const fetchQuizzes = async () => {
         try {
             const response = await axios.get(`/api/quiz/list?page=${currentPage}&limit=${quizzesPerPage}`);
             setQuizzes(response.data);
+            // Reset showAnswers state when fetching new quizzes
+            const initialVisibility = response.data.reduce((acc, quiz) => {
+                acc[quiz.id] = false; // Initially hide all answers
+                return acc;
+            }, {});
+            setShowAnswers(initialVisibility);
         } catch (err) {
             console.error('Error fetching quizzes:', err);
             setError('Failed to load quizzes.');
         }
     };
 
-    const fetchRandomQuiz = async () => {
-        try {
-            const response = await axios.get(`/api/quiz`);
-            setRandomQuiz(response.data);
-        } catch (err) {
-            console.error('Error fetching quizzes:', err);
-            setError('Failed to load quizzes.');
-        }
-    };
-
-    const handleKeyDown = (e) => {
-        if (e.key === 'Enter') {
-            handleSubmit(e);
-        }
+    const toggleAnswerVisibility = (quizId) => {
+        setShowAnswers((prevState) => ({
+            ...prevState,
+            [quizId]: !prevState[quizId], // Toggle visibility
+        }));
     };
 
     const handleSubmit = async (e) => {
@@ -83,20 +83,20 @@ const App = () => {
 
     const getRandomQuiz = async () => {
         try {
-            await fetchRandomQuiz(); // Re-fetch random quiz
+            const response = await axios.get(`/api/quiz`); // Use your API endpoint to fetch a random quiz
+            return response.data;
         } catch (err) {
-            if (err.response && err.response.status === 400) {
-                setError(err.response.data.message);
-            } else {
-                console.error('Error adding quiz:', err);
-            }
+            console.error('Error fetching random quiz:', err);
+            setError('Failed to load random quiz.');
+            return null;
         }
     };
 
-    const handleRandomQuizChange = () => {
-        const newRandomQuiz = getRandomQuiz();
-        setRandomQuiz(newRandomQuiz); // Update the random quiz
+    const handleRandomQuizChange = async () => {
+        const newRandomQuiz = await getRandomQuiz(); // Wait for the new quiz to load
+        setRandomQuiz(newRandomQuiz); // Update the state with the fetched random quiz
     };
+
 
     return (
         <Router>
@@ -107,7 +107,7 @@ const App = () => {
                             <li>
                                 <NavLink
                                     to="/"
-                                    className={({isActive}) => isActive ? "active-tab" : ""}
+                                    className={({ isActive }) => (isActive ? 'active-tab' : '')}
                                 >
                                     Home
                                 </NavLink>
@@ -115,7 +115,7 @@ const App = () => {
                             <li>
                                 <NavLink
                                     to="/add-quiz"
-                                    className={({isActive}) => isActive ? "active-tab" : ""}
+                                    className={({ isActive }) => (isActive ? 'active-tab' : '')}
                                 >
                                     Add Quiz
                                 </NavLink>
@@ -123,7 +123,7 @@ const App = () => {
                             <li>
                                 <NavLink
                                     to="/random-quiz"
-                                    className={({isActive}) => isActive ? "active-tab" : ""}
+                                    className={({ isActive }) => (isActive ? 'active-tab' : '')}
                                 >
                                     Random Quiz
                                 </NavLink>
@@ -142,10 +142,20 @@ const App = () => {
                         element={
                             <>
                                 <ul className="quiz-list">
-                                    {quizzes.map((quiz, index) => (
-                                        <li key={index} className="quiz-item">
+                                    {quizzes.map((quiz) => (
+                                        <li key={quiz.id} className="quiz-item">
                                             <h3 className="quiz-question">Q{quiz.idx}: {quiz.question}</h3>
-                                            <p className="correct-answer">A: {quiz.answer}</p>
+                                            {showAnswers[quiz.id] ? (
+                                                <p className="correct-answer">A: {quiz.answer}</p>
+                                            ) : (
+                                                <p className="hidden-answer">A: ******</p>
+                                            )}
+                                            <button
+                                                onClick={() => toggleAnswerVisibility(quiz.id)}
+                                                className="toggle-button"
+                                            >
+                                                {showAnswers[quiz.id] ? 'Hide Answer' : 'Show Answer'}
+                                            </button>
                                         </li>
                                     ))}
                                 </ul>
@@ -158,11 +168,7 @@ const App = () => {
                                         Previous
                                     </button>
                                     <span>Page {currentPage}</span>
-                                    <button
-                                        onClick={() => handlePageChange(currentPage + 1)}
-                                    >
-                                        Next
-                                    </button>
+                                    <button onClick={() => handlePageChange(currentPage + 1)}>Next</button>
                                 </div>
                             </>
                         }
@@ -170,7 +176,7 @@ const App = () => {
                     <Route
                         path="/add-quiz"
                         element={
-                            <form onSubmit={handleSubmit} className="quiz-form" onKeyDown={handleKeyDown}>
+                            <form onSubmit={handleSubmit} className="quiz-form">
                                 <input
                                     className="input-field"
                                     type="text"
@@ -197,7 +203,17 @@ const App = () => {
                                     <div className="random-quiz">
                                         <h2>Random Quiz</h2>
                                         <h3 className="quiz-question">{randomQuiz.question}</h3>
-                                        <p className="correct-answer">A: {randomQuiz.answer}</p>
+                                        {showAnswers[randomQuiz.id] ? (
+                                            <p className="correct-answer">A: {randomQuiz.answer}</p>
+                                        ) : (
+                                            <p className="hidden-answer">A: ******</p>
+                                        )}
+                                        <button
+                                            onClick={() => toggleAnswerVisibility(randomQuiz.id)}
+                                            className="toggle-button"
+                                        >
+                                            {showAnswers[randomQuiz.id] ? 'Hide Answer' : 'Show Answer'}
+                                        </button>
                                         <button onClick={handleRandomQuizChange} className="refresh-button">
                                             Show Another Quiz
                                         </button>
